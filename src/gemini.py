@@ -43,7 +43,13 @@ def generate_reply(user_message, conversation_history):
         try:
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
-                contents=contents
+                contents=contents,
+                config={
+                    "system_instruction": (
+                        "Answer in exactly one line. "
+                        "Keep the answer concise and do not use line breaks."
+                    )
+                }
             )
 
             return response.text

@@ -22,5 +22,11 @@ class ConversationStore:
             self.conversations[user_id][-self.max_turns:]
         )
 
+        print("\n========== MEMORY ==========")
+        print("User ID:", user_id)
+        print("Messages stored:", len(self.conversations[user_id]))
+        print("History:")
+        print(self.conversations[user_id])
+        print("============================\n")
     def clear_history(self, user_id: str) -> None:
         self.conversations.pop(user_id, None)

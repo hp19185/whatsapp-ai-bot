@@ -1,48 +1,50 @@
 import os
+import requests
 
 from dotenv import load_dotenv
-from twilio.rest import Client
-
 
 load_dotenv()
 
+META_ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
+META_PHONE_NUMBER_ID = os.getenv("META_PHONE_NUMBER_ID")
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
+if not META_ACCESS_TOKEN:
+    raise ValueError("META_ACCESS_TOKEN is missing")
 
-
-if not TWILIO_ACCOUNT_SID:
-    raise ValueError("TWILIO_ACCOUNT_SID is missing")
-
-if not TWILIO_AUTH_TOKEN:
-    raise ValueError("TWILIO_AUTH_TOKEN is missing")
-
-if not TWILIO_WHATSAPP_NUMBER:
-    raise ValueError("TWILIO_WHATSAPP_NUMBER is missing")
-
-
-client = Client(
-    TWILIO_ACCOUNT_SID,
-    TWILIO_AUTH_TOKEN
-)
+if not META_PHONE_NUMBER_ID:
+    raise ValueError("META_PHONE_NUMBER_ID is missing")
 
 
 def send_whatsapp_message(to, message):
 
-    result = client.messages.create(
-        from_=TWILIO_WHATSAPP_NUMBER,
-        to=to,
-        body=message
+    url = (
+        f"https://graph.facebook.com/v25.0/"
+        f"{META_PHONE_NUMBER_ID}/messages"
     )
 
-    return result.sid
+    headers = {
+        "Authorization": f"Bearer {META_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
-if __name__ == "__main__":
+    data = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "text",
+        "text": {
+            "body": message
+        }
+    }
 
-    sid = send_whatsapp_message(
-        "whatsapp:+919601451273",
-        "Hello from my Python WhatsApp bot!"
+    response = requests.post(
+        url,
+        headers=headers,
+        json=data
     )
 
-    print("Message SID:", sid)
+    print("Meta response:", response.status_code)
+    print(response.text)
+
+    response.raise_for_status()
+
+    return response.json()
